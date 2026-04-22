@@ -31,6 +31,39 @@ x-airflow-common: &airflow-common
             condition: service_healthy
 
 services:
+    # Project Services
+    mysql_staging:
+        env_file:
+            - .env
+        image: mysql:9
+        environment:
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
+            MYSQL_DATABASE: ${MYSQL_DATABASE:-staging_db}
+            MYSQL_USER: ${MYSQL_USER:-staging_user}
+            MYSQL_PASSWORD: ${MYSQL_PASSWORD:-staging_pass}
+        volumes:
+            - mysql-db-volume:/var/lib/mysql
+            - ./init-sql/mysql_init.sql:/docker-entrypoint-initdb.d/init.sql
+        ports:
+            - "${MYSQL_PORT:-3306}:3306"
+        restart: always
+
+    postgres_analytics:
+        env_file:
+            - .env
+        image: postgres:18
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-analytics_user}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-analytics_pass}
+            POSTGRES_DB: ${POSTGRES_DB:-analytics_db}
+        volumes:
+            - postgres_analytics-db-volume:/var/lib/postgresql
+            - ./init-sql/postgres_init.sql:/docker-entrypoint-initdb.d/init.sql
+        ports:
+            - "${POSTGRES_PORT:-5432}:5432"
+        restart: always
+
+    # Airflow Services
     postgres:
         image: postgres:18
         environment:
@@ -119,7 +152,6 @@ services:
         <<: *airflow-common
         command: celery worker
         healthcheck:
-            # yamllint disable rule:line-length
             test:
                 [
                     "CMD-SHELL",
@@ -131,8 +163,6 @@ services:
             start_period: 30s
         environment:
             <<: *airflow-common-env
-            # Required to handle warm shutdown of the celery workers properly
-            # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
             DUMB_INIT_SETSID: "0"
         restart: always
         depends_on:
@@ -254,3 +284,5 @@ services:
 
 volumes:
     postgres-db-volume:
+    mysql-db-volume:
+    postgres_analytics-db-volume:
