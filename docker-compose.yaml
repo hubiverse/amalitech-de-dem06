@@ -1,5 +1,7 @@
 x-airflow-common: &airflow-common
-    image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:3.2.0}
+    build:
+        context: .
+        dockerfile: Dockerfile
     env_file:
         - ${ENV_FILE_PATH:-.env}
     environment: &airflow-common-env
@@ -35,7 +37,7 @@ services:
     mysql_staging:
         env_file:
             - .env
-        image: mysql:9
+        image: mysql:8.4
         environment:
             MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
             MYSQL_DATABASE: ${MYSQL_DATABASE:-staging_db}
@@ -46,6 +48,7 @@ services:
             - ./init-sql/mysql_init.sql:/docker-entrypoint-initdb.d/init.sql
         ports:
             - "${MYSQL_PORT:-3306}:3306"
+        command: --local-infile=1
         restart: always
 
     postgres_analytics:

@@ -7,4 +7,15 @@ requires-python = ">=3.12"
 dependencies = [
     "apache-airflow>=3.2.1",
     "kagglehub>=1.0.0",
+    "mysql-connector-python>=9.6.0",
 ]
+
+[tool.basedpyright]
+extraPaths = ["dags"]
+# reportUnusedCallResult = false
+reportMissingTypeStubs = false
+# reportUnknownVariableType = false
+# reportUnknownMemberType = false
+# reportUnknownParameterType = false
+# reportUnknownArgumentType = false
+# reportAny = false
