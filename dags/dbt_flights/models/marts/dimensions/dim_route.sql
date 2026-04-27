@@ -1,8 +1,7 @@
 {{ config(materialized='table') }}
 
 SELECT DISTINCT
-    -- Postgres uses || for concatenation and requires text cast for MD5
-    MD5(CAST(source_code || destination_code AS TEXT)) AS route_id,
+    {{ dbt_utils.generate_surrogate_key(['source_code', 'destination_code']) }} AS route_id,
     source_code,
     source_name,
     destination_code,

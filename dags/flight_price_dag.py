@@ -28,8 +28,8 @@ with DAG(
     @task()
     def extract() -> str:
         """
-        Airflow injects context variables into kwargs automatically.
         We extract the run_id and pass it to our typed function.
+        Load the Kaggle dataset into MySQL.
         """
         context = get_current_context()
         current_run_id: str = context.get("run_id", "manual_run_fallback")
@@ -38,6 +38,9 @@ with DAG(
 
     @task()
     def transfer_to_postgres(run_id: str) -> None:
+        """
+        Transfer data from MySQL to PostgreSQL.
+        """
         transfer_mysql_to_postgres(run_id=run_id)
 
     transform = DbtTaskGroup(

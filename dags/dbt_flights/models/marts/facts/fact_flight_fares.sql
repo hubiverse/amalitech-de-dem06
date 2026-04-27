@@ -9,13 +9,20 @@
 
 SELECT
     -- Generate Unique Fact ID
-    MD5(CAST(stg.raw_id AS TEXT) || stg.airflow_run_id) AS fact_id,
+    {{ dbt_utils.generate_surrogate_key([
+          'stg.airline',
+          'stg.source_code',
+          'stg.destination_code',
+          'stg.departure_time',
+          'stg.booking_source'
+      ]) }} AS fact_id,
+
     stg.airflow_run_id,
 
     -- Surrogate Keys
-    MD5(stg.source_code || stg.destination_code) AS route_id,
-    MD5(stg.aircraft_type) AS aircraft_id,
-    MD5(stg.travel_class || stg.booking_source || stg.stopovers) AS booking_profile_id,
+    {{ dbt_utils.generate_surrogate_key(['stg.source_code', 'stg.destination_code']) }} AS route_id,
+    {{ dbt_utils.generate_surrogate_key(['stg.aircraft_type']) }} AS aircraft_id,
+    {{ dbt_utils.generate_surrogate_key(['stg.travel_class', 'stg.booking_source', 'stg.stopovers']) }} AS booking_profile_id,
 
     -- Date Surrogate Keys (Format: YYYYMMDD as Integer)
     CAST(TO_CHAR(stg.departure_time, 'YYYYMMDD') AS INTEGER) AS departure_date_id,

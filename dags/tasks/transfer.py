@@ -30,7 +30,7 @@ def transfer_mysql_to_postgres(run_id: str) -> None:
         stopovers, aircraft_type, travel_class, booking_source,
         base_fare, tax_and_surcharge, total_fare, seasonality,
         days_before_departure, ingested_at
-    ) FROM STDIN WITH CSV
+    ) FROM STDIN WITH CSV NULL ''
     """
 
     try:
