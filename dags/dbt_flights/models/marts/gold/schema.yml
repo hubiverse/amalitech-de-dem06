@@ -1,0 +1,17 @@
+version: 2
+
+models:
+    - name: mart_airline_performance
+      columns:
+          - name: airline
+            tests:
+                - not_null
+          - name: avg_fare
+            tests:
+                - not_null
+    - name: mart_seasonal_variation
+      columns:
+          - name: season_type
+            tests:
+                - accepted_values:
+                      values: ["Peak", "Non-Peak"]
