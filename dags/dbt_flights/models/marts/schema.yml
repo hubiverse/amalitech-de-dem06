@@ -1,0 +1,63 @@
+version: 2
+
+models:
+    - name: fact_flight_fares
+      description: "Central fact table for flight pricing analytics."
+      columns:
+          - name: fact_id
+            tests:
+                - unique
+                - not_null
+          - name: route_id
+            tests:
+                - not_null
+                - relationships:
+                      to: ref('dim_route')
+                      field: route_id
+          - name: aircraft_id
+            tests:
+                - not_null
+                - relationships:
+                      to: ref('dim_aircraft')
+                      field: aircraft_id
+          - name: booking_profile_id
+            tests:
+                - not_null
+                - relationships:
+                      to: ref('dim_booking_profile')
+                      field: booking_profile_id
+          - name: departure_date_id
+            tests:
+                - not_null
+                - relationships:
+                      to: ref('dim_date')
+                      field: date_id
+          - name: total_fare
+            tests:
+                - not_null
+                - dbt_utils.accepted_range:
+                      min_value: 0.01 # A fare of 0 is usually a data error
+
+    - name: dim_route
+      columns:
+          - name: route_id
+            tests:
+                - unique
+                - not_null
+          - name: source_code
+            tests:
+                - not_null
+
+    - name: dim_aircraft
+      columns:
+          - name: aircraft_id
+            tests:
+                - unique
+                - not_null
+
+    - name: dim_date
+      columns:
+          - name: date_id
+            tests:
+                - unique
+                - not_null

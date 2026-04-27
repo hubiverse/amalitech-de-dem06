@@ -1,2 +1,5 @@
 kagglehub
+dbt-core
+astronomer-cosmos
+dbt-postgres
 mysql-connector-python

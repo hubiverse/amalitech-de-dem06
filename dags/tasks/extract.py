@@ -10,7 +10,6 @@ def load_kaggle_to_mysql(run_id: str) -> None:
     Args:
         run_id (str): The Airflow run ID used for data lineage/traceability.
     """
-    print(f"Starting ingestion for Airflow run: {run_id}")
 
     # Download Data
     dataset_path: str = kagglehub.dataset_download(
@@ -61,7 +60,6 @@ def load_kaggle_to_mysql(run_id: str) -> None:
 
         _ = cursor.execute(load_query)
         _ = conn.commit()
-        print(f"Successfully loaded batch {run_id} to Bronze layer.")
 
     finally:
         _ = cursor.close()

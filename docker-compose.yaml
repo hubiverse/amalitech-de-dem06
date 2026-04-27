@@ -275,6 +275,7 @@ services:
                 echo "Files in shared volumes:"
                 echo
                 ls -la /opt/airflow/{logs,dags,plugins,config}
+                cd /opt/airflow/dags/dbt_flights && dbt deps
 
         # yamllint enable rule:line-length
         environment:

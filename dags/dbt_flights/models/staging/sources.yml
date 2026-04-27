@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+    - name: analytics_db
+      database: "{{ env_var('POSTGRES_DB') }}"
+      freshness:
+          warn_after: { count: 24, period: hour }
+          error_after: { count: 48, period: hour }
+      loaded_at_field: ingested_at
+      schema: "{{ env_var('POSTGRES_SCHEMA') }}"
+      tables:
+          - name: raw_flights

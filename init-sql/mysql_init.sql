@@ -1,6 +1,8 @@
 USE staging_db;
 
+-- ======================================
 -- Bronze Layer
+-- ======================================
 CREATE TABLE IF NOT EXISTS raw_flights (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     airflow_run_id VARCHAR(255),
@@ -24,43 +26,89 @@ CREATE TABLE IF NOT EXISTS raw_flights (
     ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Invalid
-CREATE TABLE IF NOT EXISTS invalid_flights (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    row_data JSON NOT NULL,
-    error_message VARCHAR(255) NOT NULL,
-    inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Silver Layer
-CREATE TABLE IF NOT EXISTS clean_flights (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    airline VARCHAR(100) NOT NULL,
-    source CHAR(3) NOT NULL,
-    source_name VARCHAR(150),
-    destination CHAR(3) NOT NULL,
-    destination_name VARCHAR(150),
-    departure_time DATETIME NOT NULL,
-    arrival_time DATETIME NOT NULL,
-    duration_hrs DECIMAL(5,2),
-    stopovers VARCHAR(50),
-    aircraft_type VARCHAR(100),
-    travel_class VARCHAR(50),
-    booking_source VARCHAR(100),
-    base_fare DECIMAL(10,2),
-    tax_and_surcharge DECIMAL(10,2),
-    total_fare DECIMAL(10,2),
-    seasonality VARCHAR(50),
-    days_before_departure INT,
-    ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_route ON clean_flights(source, destination);
-CREATE INDEX idx_departure_time ON clean_flights(departure_time);
+-- ==========================================
+-- Invalid Flights
+-- ==========================================
+-- CREATE TABLE IF NOT EXISTS invalid_flights (
+--     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--     airflow_run_id VARCHAR(255),
+--     row_data JSON NOT NULL,
+--     error_message VARCHAR(255) NOT NULL,
+--     inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 
--- KPI Tables
-CREATE TABLE IF NOT EXISTS kpi_avg_fare (airline VARCHAR(100), avg_total_fare DECIMAL(10,2));
-CREATE TABLE IF NOT EXISTS kpi_seasonal_fare (season VARCHAR(50), avg_total_fare DECIMAL(10,2));
-CREATE TABLE IF NOT EXISTS kpi_booking_count (airline VARCHAR(100), booking_count INT);
-CREATE TABLE IF NOT EXISTS kpi_popular_routes (route VARCHAR(20), route_count INT);
+-- ==========================================
+-- SILVER LAYER: DIMENSIONS
+-- ==========================================
+
+-- Route Dimension
+-- CREATE TABLE IF NOT EXISTS dim_route (
+--     route_id INT AUTO_INCREMENT PRIMARY KEY,
+--     source_code CHAR(3) NOT NULL,
+--     source_name VARCHAR(255),
+--     destination_code CHAR(3) NOT NULL,
+--     destination_name VARCHAR(255),
+--     route_name CHAR(7) NOT NULL,     -- e.g., 'DAC-LHR'
+--     UNIQUE KEY unq_route (source_code, destination_code)
+-- );
+
+-- Aircraft Dimension
+-- CREATE TABLE IF NOT EXISTS dim_aircraft (
+--     aircraft_id INT AUTO_INCREMENT PRIMARY KEY,
+--     aircraft_type VARCHAR(100) NOT NULL,
+--     UNIQUE KEY unq_aircraft (aircraft_type)
+-- );
+
+-- Booking Profile Dimension
+-- CREATE TABLE IF NOT EXISTS dim_booking_profile (
+--     booking_profile_id INT AUTO_INCREMENT PRIMARY KEY,
+--     travel_class VARCHAR(50) NOT NULL,
+--     booking_source VARCHAR(100) NOT NULL,
+--     stopovers VARCHAR(50) NOT NULL,
+--     UNIQUE KEY unq_booking_profile (travel_class, booking_source, stopovers)
+-- );
+
+-- Date Dimension
+-- CREATE TABLE IF NOT EXISTS dim_date (
+--     date_id INT PRIMARY KEY,         -- e.g., 20260424
+--     full_date DATE NOT NULL,
+--     year INT NOT NULL,
+--     month INT NOT NULL,
+--     day INT NOT NULL,
+--     seasonality VARCHAR(50),
+--     is_weekend BOOLEAN
+-- );
+
+-- ==========================================
+-- SILVER LAYER: FACT TABLE
+-- ==========================================
+
+-- CREATE TABLE IF NOT EXISTS fact_flight_fares (
+--     fact_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+--     airflow_run_id VARCHAR(255),
+
+--     -- Foreign Keys
+--     route_id INT NOT NULL,
+--     aircraft_id INT NOT NULL,
+--     booking_profile_id INT NOT NULL,
+--     departure_date_id INT NOT NULL,
+--     arrival_date_id INT NOT NULL,
+
+--    -- Degenerate Dimensions
+--     airline VARCHAR(100) NOT NULL,
+--     departure_time DATETIME NOT NULL,
+--     arrival_time DATETIME NOT NULL,
+
+--     -- Measures (Fixed Precision)
+--     duration_hrs DECIMAL(10,4),
+--     days_before_departure INT,
+--     base_fare DECIMAL(10,2),
+--     tax_and_surcharge DECIMAL(10,2),
+--     total_fare DECIMAL(10,2),
+
+--     -- Indexes
+--     INDEX idx_fk_route (route_id),
+--     INDEX idx_fk_date (departure_date_id),
+--     INDEX idx_airline (airline)
+-- );
